@@ -106,6 +106,8 @@ open class SideMenuTransition: UIPercentDrivenInteractiveTransition {
             pan.isEnabled = false
             pan.isEnabled = true
             return
+        } else if pan.state != .began && pan.state != .changed {
+            activeGesture = nil
         }
         
         // how much distance have we panned in reference to the parent view?
@@ -172,11 +174,9 @@ open class SideMenuTransition: UIPercentDrivenInteractiveTransition {
                 }
                 SideMenuManager.delegate?.willOpen(duration: TimeInterval(singleton.percentComplete * singleton.duration))
                 singleton.finish()
-                activeGesture = nil
             } else {
                 SideMenuManager.delegate?.willClose(duration: TimeInterval(singleton.percentComplete * singleton.duration))
                 singleton.cancel()
-                activeGesture = nil
             }
         }
     }

@@ -132,6 +132,13 @@ open class SideMenuManager : NSObject {
     
     open static var completionCurve: UIViewAnimationCurve = .easeInOut
     open static var completionSpeed: CGFloat = 1.0
+    /** 
+     Automatically dismisses the menu when another view is pushed from it.
+    
+     Note: to prevent the menu from dismissing when presenting, set modalPresentationStyle = .overFullScreen
+     of the view controller being presented in storyboard or during its initalization.
+     */
+    open static var menuDismissOnPush = true
     
     /// -Warning: Deprecated. Use `menuPushStyle = .subMenu` instead.
     @available(*, deprecated, renamed: "menuPushStyle", message: "Use `menuPushStyle = .subMenu` instead.")
