@@ -15,21 +15,10 @@
      SideMenuManager.menuAddPanGestureToPresent(toView: self.navigationController!.navigationBar)
      SideMenuManager.menuAddScreenEdgePanGesturesToPresent(toView: self.navigationController!.view)
 */
-import UIKit
-
-public protocol SideMenuDelegate {
-    func onSideMenuPercentageUpdate(percentComplete: CGFloat, presenting: Bool)
-    func willOpen(duration: TimeInterval)
-    func willClose(duration: TimeInterval)
-    func didOpen()
-    func didClose()
-}
 
 open class SideMenuManager : NSObject {
     
-    public static var delegate: SideMenuDelegate?
-    
-    @objc public enum MenuPushStyle : Int {
+    public enum MenuPushStyle : Int {
         case defaultBehavior,
         popWhenPossible,
         replace,
@@ -38,7 +27,7 @@ open class SideMenuManager : NSObject {
         subMenu
     }
     
-    @objc public enum MenuPresentMode : Int {
+    public enum MenuPresentMode : Int {
         case menuSlideIn,
         viewSlideOut,
         viewSlideInOut,
@@ -77,9 +66,13 @@ open class SideMenuManager : NSObject {
     
     /// Prevents the same view controller (or a view controller of the same class) from being pushed more than once. Defaults to true.
     open static var menuAllowPushOfSameClassTwice = true
-    
-    /// Width of the menu when presented on screen, showing the existing view controller in the remaining space. Default is 75% of the screen width.
-    open static var menuWidth: CGFloat = max(round(min((appScreenRect.width), (appScreenRect.height)) * 0.75), 240)
+
+    /**
+     Width of the menu when presented on screen, showing the existing view controller in the remaining space. Default is 75% of the screen width or 240 points, whichever is smaller.
+     
+     Note that each menu's width can be overridden using the `menuWidth` property on any `UISideMenuNavigationController` instance.
+     */
+    open static var menuWidth: CGFloat = min(round(min((appScreenRect.width), (appScreenRect.height)) * 0.75), 240)
     
     /// Duration of the animation when the menu is presented without gestures. Default is 0.35 seconds.
     open static var menuAnimationPresentDuration: Double = 0.35
@@ -87,8 +80,8 @@ open class SideMenuManager : NSObject {
     /// Duration of the animation when the menu is dismissed without gestures. Default is 0.35 seconds.
     open static var menuAnimationDismissDuration: Double = 0.35
     
-    /// Duration of the remaining animation when the menu is partially dismissed with gestures. Default is 0.2 seconds.
-    open static var menuAnimationCompleteGestureDuration: Double = 0.20
+    /// Duration of the remaining animation when the menu is partially dismissed with gestures. Default is 0.35 seconds.
+    open static var menuAnimationCompleteGestureDuration: Double = 0.35
     
     /// Amount to fade the existing view controller when the menu is presented. Default is 0 for no fade. Set to 1 to fade completely.
     open static var menuAnimationFadeStrength: CGFloat = 0
@@ -126,8 +119,6 @@ open class SideMenuManager : NSObject {
     /// The animation initial spring velocity when a menu is displayed. Ignored when displayed with a gesture.
     open static var menuAnimationInitialSpringVelocity: CGFloat = 1
     
-    open static var completionCurve: UIViewAnimationCurve = .easeInOut
-    open static var completionSpeed: CGFloat = 1.0
     /** 
      Automatically dismisses the menu when another view is pushed from it.
     
