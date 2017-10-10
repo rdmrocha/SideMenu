@@ -148,17 +148,13 @@ open class SideMenuTransition: UIPercentDrivenInteractiveTransition {
             }
         }
         
-        singleton.completionCurve = SideMenuManager.completionCurve
-        singleton.completionSpeed = SideMenuManager.completionSpeed
         let direction: CGFloat = SideMenuTransition.presentDirection == .left ? 1 : -1
         let distance = translation.x / menuWidth
         // now lets deal with different states that the gesture recognizer sends
         switch (pan.state) {
         case .began, .changed:
             if pan is UIScreenEdgePanGestureRecognizer {
-                let percentComplete = max(min(distance * direction, 1),0)
-                SideMenuManager.delegate?.onSideMenuPercentageUpdate(percentComplete: percentComplete, presenting: true)
-                singleton.update(percentComplete)
+                singleton.update(min(distance * direction, 1))
             } else if distance > 0 && SideMenuTransition.presentDirection == .right && SideMenuManager.menuLeftNavigationController != nil {
                 SideMenuTransition.presentDirection = .left
                 switchMenus = true
@@ -166,9 +162,7 @@ open class SideMenuTransition: UIPercentDrivenInteractiveTransition {
                 SideMenuTransition.presentDirection = .right
                 switchMenus = true
             } else {
-                let percentComplete = max(min(distance * direction, 1),0)
-                SideMenuManager.delegate?.onSideMenuPercentageUpdate(percentComplete: percentComplete, presenting: true)
-                singleton.update(percentComplete)
+                singleton.update(min(distance * direction, 1))
             }
         default:
             singleton.interactive = false
@@ -180,10 +174,8 @@ open class SideMenuTransition: UIPercentDrivenInteractiveTransition {
                 if ProcessInfo().operatingSystemVersion.majorVersion == 8 && singleton.percentComplete > 1 - CGFloat.ulpOfOne {
                     singleton.update(0.9999)
                 }
-                SideMenuManager.delegate?.willOpen(duration: TimeInterval(singleton.percentComplete * singleton.duration))
                 singleton.finish()
             } else {
-                SideMenuManager.delegate?.willClose(duration: TimeInterval(singleton.percentComplete * singleton.duration))
                 singleton.cancel()
             }
         }
@@ -198,8 +190,6 @@ open class SideMenuTransition: UIPercentDrivenInteractiveTransition {
             return
         }
         
-        singleton.completionCurve = SideMenuManager.completionCurve
-        singleton.completionSpeed = SideMenuManager.completionSpeed
         let translation = pan.translation(in: pan.view!)
         let direction:CGFloat = SideMenuTransition.presentDirection == .left ? -1 : 1
         let distance = translation.x / menuWidth * direction
@@ -210,9 +200,7 @@ open class SideMenuTransition: UIPercentDrivenInteractiveTransition {
             singleton.interactive = true
             presentingViewControllerForMenu?.dismiss(animated: true, completion: nil)
         case .changed:
-            let percentComplete = max(min(distance, 1),0)
-            SideMenuManager.delegate?.onSideMenuPercentageUpdate(percentComplete: percentComplete, presenting: false)
-            singleton.update(percentComplete)
+            singleton.update(max(min(distance, 1), 0))
         default:
             singleton.interactive = false
             let velocity = pan.velocity(in: pan.view!).x * direction
@@ -221,11 +209,9 @@ open class SideMenuTransition: UIPercentDrivenInteractiveTransition {
                 if ProcessInfo().operatingSystemVersion.majorVersion == 8 && singleton.percentComplete > 1 - CGFloat.ulpOfOne {
                     singleton.update(0.9999)
                 }
-                SideMenuManager.delegate?.willClose(duration: TimeInterval(singleton.percentComplete * singleton.duration))
                 singleton.finish()
                 activeGesture = nil
             } else {
-                SideMenuManager.delegate?.willOpen(duration: TimeInterval(singleton.percentComplete * singleton.duration))
                 singleton.cancel()
                 activeGesture = nil
             }
@@ -288,7 +274,6 @@ open class SideMenuTransition: UIPercentDrivenInteractiveTransition {
             let menuView = viewControllerForMenu?.view else {
                 return
         }
-        SideMenuManager.delegate?.didClose()
 
         SideMenuTransition.tapView?.removeFromSuperview()
         SideMenuTransition.statusBarView?.removeFromSuperview()
@@ -366,7 +351,6 @@ open class SideMenuTransition: UIPercentDrivenInteractiveTransition {
             return
         }
       
-        SideMenuManager.delegate?.didOpen()
         switch SideMenuManager.menuPresentMode {
         case .menuSlideIn, .menuDissolveIn, .viewSlideInOut:
             if SideMenuManager.menuParallaxStrength != 0 {
@@ -544,11 +528,6 @@ extension SideMenuTransition: UIViewControllerAnimatedTransitioning {
                 complete()
             })
         } else {
-            if presenting {
-                SideMenuManager.delegate?.willOpen(duration: duration)
-            } else {
-                SideMenuManager.delegate?.willClose(duration: duration)
-            }
             UIView.animate(withDuration: duration,
                            delay: 0,
                            usingSpringWithDamping: SideMenuManager.menuAnimationUsingSpringWithDamping,
